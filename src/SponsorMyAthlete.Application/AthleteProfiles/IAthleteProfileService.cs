@@ -1,10 +1,12 @@
+using SponsorMyAthlete.Domain;
+
 namespace SponsorMyAthlete.Application.AthleteProfiles;
 
 public interface IAthleteProfileService
 {
     Task<AthleteProfileDto> GetOrCreateForUserAsync(Guid userId, CancellationToken ct = default);
     Task<AthleteProfileDto?> GetPublishedByIdAsync(Guid athleteProfileId, CancellationToken ct = default);
-    Task<IReadOnlyList<AthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CancellationToken ct = default);
+    Task<IReadOnlyList<AthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CompetitiveLevel? competitiveLevel, CancellationToken ct = default);
 
     Task<AthleteProfileDto> UpdateBasicsAsync(Guid userId, UpdateBasicsRequest request, CancellationToken ct = default);
     Task<AthleteProfileDto> UpdatePersonalDetailsAsync(Guid userId, UpdatePersonalDetailsRequest request, CancellationToken ct = default);

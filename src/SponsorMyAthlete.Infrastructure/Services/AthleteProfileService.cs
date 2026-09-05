@@ -23,13 +23,15 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
         return profile is null ? null : ToDto(profile);
     }
 
-    public async Task<IReadOnlyList<AthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CancellationToken ct = default)
+    public async Task<IReadOnlyList<AthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CompetitiveLevel? competitiveLevel, CancellationToken ct = default)
     {
         var query = Query().Where(a => a.VerificationStatus == VerificationStatus.Published);
         if (!string.IsNullOrWhiteSpace(sport))
             query = query.Where(a => a.Sport == sport);
         if (!string.IsNullOrWhiteSpace(state))
             query = query.Where(a => a.State == state);
+        if (competitiveLevel is not null)
+            query = query.Where(a => a.CompetitiveLevel == competitiveLevel);
 
         var profiles = await query.ToListAsync(ct);
         return profiles.Select(ToDto).ToList();
