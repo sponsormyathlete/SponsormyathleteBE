@@ -1,0 +1,6 @@
+@SponsorMyAthlete.Api_HostAddress = http://localhost:5181
+
+GET {{SponsorMyAthlete.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SponsorMyAthlete.Api/SponsorMyAthlete.Api.csproj" />
+    <Project Path="src/SponsorMyAthlete.Application/SponsorMyAthlete.Application.csproj" />
+    <Project Path="src/SponsorMyAthlete.Domain/SponsorMyAthlete.Domain.csproj" />
+    <Project Path="src/SponsorMyAthlete.Infrastructure/SponsorMyAthlete.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SponsorMyAthlete.Api.Tests/SponsorMyAthlete.Api.Tests.csproj" />
+    <Project Path="tests/SponsorMyAthlete.Domain.Tests/SponsorMyAthlete.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
