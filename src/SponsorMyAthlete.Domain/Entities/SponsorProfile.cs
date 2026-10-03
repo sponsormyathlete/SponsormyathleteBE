@@ -49,6 +49,9 @@ public class SponsorProfile
 
     public List<SponsorWishlist> Wishlists { get; set; } = new();
 
+    /// <summary>Set when the final onboarding step (identity) is saved.</summary>
+    public DateTimeOffset? OnboardingCompletedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
 }

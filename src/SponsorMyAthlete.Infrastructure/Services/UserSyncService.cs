@@ -10,7 +10,7 @@ public class UserSyncService(AppDbContext db) : IUserSyncService
 {
     public async Task<UserDto> EnsureUserAsync(string auth0Sub, string email, bool grantAdmin, CancellationToken ct = default)
     {
-        var user = await db.Users.SingleOrDefaultAsync(u => u.Auth0Sub == auth0Sub, ct);
+        var user = await FindAsync(auth0Sub, ct);
         if (user is null)
         {
             user = new User
@@ -36,7 +36,8 @@ public class UserSyncService(AppDbContext db) : IUserSyncService
 
     public async Task<UserDto> SetRoleAsync(string auth0Sub, UserRole role, CancellationToken ct = default)
     {
-        var user = await db.Users.SingleAsync(u => u.Auth0Sub == auth0Sub, ct);
+        var user = await FindAsync(auth0Sub, ct)
+            ?? throw new KeyNotFoundException("User has not been synced.");
         if (user.Role is not null && user.Role != role)
             throw new InvalidOperationException("Role is already set and cannot be changed.");
 
@@ -47,10 +48,29 @@ public class UserSyncService(AppDbContext db) : IUserSyncService
 
     public async Task<UserDto?> GetByAuth0SubAsync(string auth0Sub, CancellationToken ct = default)
     {
-        var user = await db.Users.SingleOrDefaultAsync(u => u.Auth0Sub == auth0Sub, ct);
+        var user = await FindAsync(auth0Sub, ct);
         return user is null ? null : ToDto(user);
     }
 
-    private static UserDto ToDto(User user) =>
-        new(user.Id, user.Email, user.Role, user.IsFlagged, !string.IsNullOrEmpty(user.StripeDefaultPaymentMethodId));
+    private Task<User?> FindAsync(string auth0Sub, CancellationToken ct) =>
+        db.Users
+            .Include(u => u.AthleteProfile)
+            .Include(u => u.SponsorProfile)
+            .SingleOrDefaultAsync(u => u.Auth0Sub == auth0Sub, ct);
+
+    private static UserDto ToDto(User user) => new(
+        user.Id,
+        user.Email,
+        user.Role,
+        user.IsFlagged,
+        !string.IsNullOrEmpty(user.StripeDefaultPaymentMethodId),
+        IsOnboardingComplete(user));
+
+    private static bool IsOnboardingComplete(User user) => user.Role switch
+    {
+        UserRole.Athlete => user.AthleteProfile is { VerificationStatus: not VerificationStatus.Draft },
+        UserRole.Sponsor => user.SponsorProfile?.OnboardingCompletedAt is not null,
+        UserRole.Admin => true,
+        _ => false,
+    };
 }

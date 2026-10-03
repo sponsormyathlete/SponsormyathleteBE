@@ -2,7 +2,7 @@ using SponsorMyAthlete.Domain;
 
 namespace SponsorMyAthlete.Application.Users;
 
-public record UserDto(Guid Id, string Email, UserRole? Role, bool IsFlagged, bool HasPaymentMethod);
+public record UserDto(Guid Id, string Email, UserRole? Role, bool IsFlagged, bool HasPaymentMethod, bool OnboardingComplete);
 
 public interface IUserSyncService
 {

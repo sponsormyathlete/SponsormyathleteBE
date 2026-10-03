@@ -24,6 +24,9 @@ public class SponsorProfileService(AppDbContext db, IAbrClient abrClient) : ISpo
 
     public async Task<SponsorProfileDto> UpdateBudgetAsync(Guid userId, UpdateSponsorBudgetRequest request, CancellationToken ct = default)
     {
+        if (request.BudgetMin < 0 || request.BudgetMax < request.BudgetMin)
+            throw new InvalidOperationException("The upper budget needs to be at least the starting amount.");
+
         var profile = await GetOrCreateEntityAsync(userId, ct);
         profile.BudgetMin = request.BudgetMin;
         profile.BudgetMax = request.BudgetMax;
@@ -102,7 +105,7 @@ public class SponsorProfileService(AppDbContext db, IAbrClient abrClient) : ISpo
         if (request.IsBusiness)
         {
             if (!AbnValidator.IsValidFormat(request.Abn))
-                throw new InvalidOperationException("ABN failed checksum validation.");
+                throw new InvalidOperationException("That ABN isn't valid. Check the 11 digits and try again.");
 
             var lookup = await abrClient.LookupAsync(request.Abn!, ct);
             profile.Abn = request.Abn;
@@ -116,6 +119,7 @@ public class SponsorProfileService(AppDbContext db, IAbrClient abrClient) : ISpo
             profile.AbnValidatedAt = null;
         }
 
+        profile.OnboardingCompletedAt ??= DateTimeOffset.UtcNow;
         return await SaveAndReturnAsync(profile, ct);
     }
 
@@ -126,6 +130,8 @@ public class SponsorProfileService(AppDbContext db, IAbrClient abrClient) : ISpo
         profile.Wishlists = request.Wishlists
             .Select(w => new SponsorWishlist { Id = Guid.NewGuid(), SponsorProfileId = profile.Id, Title = w.Title, Description = w.Description, CreatedAt = DateTimeOffset.UtcNow })
             .ToList();
+        // Explicit Add: see AthleteProfileService.UpdateAccomplishmentsAsync.
+        db.SponsorWishlists.AddRange(profile.Wishlists);
         return await SaveAndReturnAsync(profile, ct);
     }
 

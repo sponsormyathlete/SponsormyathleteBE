@@ -12,6 +12,8 @@ const string CorsPolicy = "Frontend";
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<SponsorMyAthlete.Api.ApiExceptionHandler>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var auth0Domain = builder.Configuration["Auth0:Domain"];
@@ -48,6 +50,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

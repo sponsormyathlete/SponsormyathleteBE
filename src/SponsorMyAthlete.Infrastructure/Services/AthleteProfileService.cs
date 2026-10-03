@@ -70,6 +70,9 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
         profile.Accomplishments = request.Accomplishments
             .Select(a => new AthleteAccomplishment { Id = Guid.NewGuid(), AthleteProfileId = profile.Id, Description = a.Description, Year = a.Year })
             .ToList();
+        // Explicit Add: a child found only via navigation with a preset Guid key is assumed to
+        // already exist, so EF would issue an UPDATE that matches no rows.
+        db.AthleteAccomplishments.AddRange(profile.Accomplishments);
         return await SaveAndReturnAsync(profile, ct);
     }
 
@@ -80,14 +83,16 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
             foreach (var existing in profile.Photos)
                 existing.IsProfilePhoto = false;
 
-        profile.Photos.Add(new AthletePhoto
+        var photo = new AthletePhoto
         {
             Id = Guid.NewGuid(),
             AthleteProfileId = profile.Id,
             Url = request.Url,
             IsProfilePhoto = request.IsProfilePhoto,
             UploadedAt = DateTimeOffset.UtcNow,
-        });
+        };
+        db.AthletePhotos.Add(photo);
+        profile.Photos.Add(photo);
         return await SaveAndReturnAsync(profile, ct);
     }
 
@@ -118,6 +123,7 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
         profile.SponsorshipPackages = request.Packages
             .Select(p => new SponsorshipPackage { Id = Guid.NewGuid(), AthleteProfileId = profile.Id, Title = p.Title, Description = p.Description, CreatedAt = DateTimeOffset.UtcNow })
             .ToList();
+        db.SponsorshipPackages.AddRange(profile.SponsorshipPackages);
         return await SaveAndReturnAsync(profile, ct);
     }
 

@@ -16,6 +16,7 @@ public class StripeService(IOptions<StripeOptions> options) : IStripeService
 
     public async Task<string> CreateCustomerAsync(string email, CancellationToken ct = default)
     {
+        EnsureConfigured();
         var service = new CustomerService();
         var customer = await service.CreateAsync(new CustomerCreateOptions { Email = email }, cancellationToken: ct);
         return customer.Id;
@@ -23,6 +24,7 @@ public class StripeService(IOptions<StripeOptions> options) : IStripeService
 
     public async Task<SetupIntentResult> CreateSetupIntentAsync(string stripeCustomerId, CancellationToken ct = default)
     {
+        EnsureConfigured();
         var service = new SetupIntentService();
         var setupIntent = await service.CreateAsync(new SetupIntentCreateOptions
         {
@@ -85,6 +87,12 @@ public class StripeService(IOptions<StripeOptions> options) : IStripeService
         }, cancellationToken: ct);
 
         return new PaymentLinkResult(link.Id, link.Url);
+    }
+
+    private void EnsureConfigured()
+    {
+        if (string.IsNullOrEmpty(_options.SecretKey))
+            throw new InvalidOperationException("Payment setup isn't available yet. You can add a payment method later from your dashboard.");
     }
 
     public object ConstructWebhookEvent(string requestBody, string stripeSignatureHeader) =>
