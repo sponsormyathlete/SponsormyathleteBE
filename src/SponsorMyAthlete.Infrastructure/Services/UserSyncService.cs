@@ -8,7 +8,7 @@ namespace SponsorMyAthlete.Infrastructure.Services;
 
 public class UserSyncService(AppDbContext db) : IUserSyncService
 {
-    public async Task<UserDto> EnsureUserAsync(string auth0Sub, string email, CancellationToken ct = default)
+    public async Task<UserDto> EnsureUserAsync(string auth0Sub, string email, bool grantAdmin, CancellationToken ct = default)
     {
         var user = await db.Users.SingleOrDefaultAsync(u => u.Auth0Sub == auth0Sub, ct);
         if (user is null)
@@ -21,14 +21,16 @@ public class UserSyncService(AppDbContext db) : IUserSyncService
                 CreatedAt = DateTimeOffset.UtcNow,
             };
             db.Users.Add(user);
-            await db.SaveChangesAsync(ct);
         }
-        else if (user.Email != email)
+        else
         {
             user.Email = email;
-            await db.SaveChangesAsync(ct);
         }
 
+        if (grantAdmin)
+            user.Role = UserRole.Admin;
+
+        await db.SaveChangesAsync(ct);
         return ToDto(user);
     }
 

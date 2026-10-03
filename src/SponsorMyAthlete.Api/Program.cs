@@ -35,6 +35,8 @@ else
 }
 
 builder.Services.AddAuthorization();
+builder.Services.AddSingleton(new AuthMode(devAuthEnabled));
+builder.Services.AddHttpClient<Auth0UserInfoClient>();
 
 builder.Services.AddCors(options =>
 {
