@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SponsorMyAthlete.Application.Abstractions;
+using SponsorMyAthlete.Application.Admin;
 using SponsorMyAthlete.Application.AthleteProfiles;
+using SponsorMyAthlete.Application.Messaging;
 using SponsorMyAthlete.Application.Payments;
 using SponsorMyAthlete.Application.SponsorProfiles;
 using SponsorMyAthlete.Application.Users;
@@ -35,6 +37,8 @@ public static class DependencyInjection
         services.AddScoped<ISponsorProfileService, SponsorProfileService>();
         services.AddScoped<IPaymentSetupService, PaymentSetupService>();
         services.AddScoped<IStripeService, StripeService>();
+        services.AddScoped<IMessagingService, MessagingService>();
+        services.AddScoped<IAdminFlagService, AdminFlagService>();
         services.AddSingleton<IMessageFilter, MessageFilterService>();
 
         return services;

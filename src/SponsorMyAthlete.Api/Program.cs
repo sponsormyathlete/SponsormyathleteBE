@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using SponsorMyAthlete.Api.Auth;
 using SponsorMyAthlete.Infrastructure;
 using SponsorMyAthlete.Infrastructure.Persistence;
 
@@ -15,14 +16,23 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var auth0Domain = builder.Configuration["Auth0:Domain"];
 var auth0Audience = builder.Configuration["Auth0:Audience"];
+var devAuthEnabled = string.IsNullOrEmpty(auth0Domain) && builder.Environment.IsDevelopment();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = string.IsNullOrEmpty(auth0Domain) ? null : $"https://{auth0Domain}/";
-        options.Audience = auth0Audience;
-        options.MapInboundClaims = false;
-    });
+if (devAuthEnabled)
+{
+    builder.Services.AddAuthentication(DevAuth.Scheme)
+        .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, DevAuthHandler>(DevAuth.Scheme, _ => { });
+}
+else
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.Authority = string.IsNullOrEmpty(auth0Domain) ? null : $"https://{auth0Domain}/";
+            options.Audience = auth0Audience;
+            options.MapInboundClaims = false;
+        });
+}
 
 builder.Services.AddAuthorization();
 
@@ -44,6 +54,11 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+}
+
+if (devAuthEnabled)
+{
+    app.Logger.LogWarning("Auth0:Domain is not configured — running with DevAuth (no real token validation). Do not enable outside Development.");
 }
 
 app.UseHttpsRedirection();

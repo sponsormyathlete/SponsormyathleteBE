@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SponsorMyAthlete.Application.Admin;
 using SponsorMyAthlete.Application.AthleteProfiles;
 using SponsorMyAthlete.Application.Users;
 using SponsorMyAthlete.Domain;
@@ -10,7 +11,7 @@ namespace SponsorMyAthlete.Api.Controllers;
 /// is a manual DB check rather than an [Authorize(Roles=...)] policy.
 /// </summary>
 [Route("api/admin")]
-public class AdminController(IUserSyncService userSyncService, IAthleteProfileService profileService)
+public class AdminController(IUserSyncService userSyncService, IAthleteProfileService profileService, IAdminFlagService flagService)
     : ApiControllerBase(userSyncService)
 {
     [HttpGet("verifications/pending")]
@@ -35,6 +36,23 @@ public class AdminController(IUserSyncService userSyncService, IAthleteProfileSe
         var forbidden = await RequireAdminAsync(ct);
         if (forbidden is not null) return forbidden;
         return Ok(await profileService.RejectVerificationAsync(athleteProfileId, request, ct));
+    }
+
+    [HttpGet("flags")]
+    public async Task<ActionResult<IReadOnlyList<AdminFlagDto>>> GetFlags([FromQuery] bool includeResolved, CancellationToken ct)
+    {
+        var forbidden = await RequireAdminAsync(ct);
+        if (forbidden is not null) return forbidden;
+        return Ok(await flagService.GetFlagsAsync(includeResolved, ct));
+    }
+
+    [HttpPost("flags/{flagId:guid}/resolve")]
+    public async Task<IActionResult> ResolveFlag(Guid flagId, CancellationToken ct)
+    {
+        var forbidden = await RequireAdminAsync(ct);
+        if (forbidden is not null) return forbidden;
+        await flagService.ResolveFlagAsync(flagId, ct);
+        return NoContent();
     }
 
     private async Task<ActionResult?> RequireAdminAsync(CancellationToken ct)
