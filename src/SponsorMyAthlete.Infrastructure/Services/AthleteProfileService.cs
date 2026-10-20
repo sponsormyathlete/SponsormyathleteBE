@@ -16,14 +16,14 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
         return ToDto(profile);
     }
 
-    public async Task<AthleteProfileDto?> GetPublishedByIdAsync(Guid athleteProfileId, CancellationToken ct = default)
+    public async Task<PublicAthleteProfileDto?> GetPublishedByIdAsync(Guid athleteProfileId, CancellationToken ct = default)
     {
         var profile = await Query()
             .SingleOrDefaultAsync(a => a.Id == athleteProfileId && a.VerificationStatus == VerificationStatus.Published, ct);
-        return profile is null ? null : ToDto(profile);
+        return profile is null ? null : ToPublicDto(profile);
     }
 
-    public async Task<IReadOnlyList<AthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CompetitiveLevel? competitiveLevel, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PublicAthleteProfileDto>> SearchDirectoryAsync(string? sport, string? state, CompetitiveLevel? competitiveLevel, CancellationToken ct = default)
     {
         var query = Query().Where(a => a.VerificationStatus == VerificationStatus.Published);
         if (!string.IsNullOrWhiteSpace(sport))
@@ -34,7 +34,7 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
             query = query.Where(a => a.CompetitiveLevel == competitiveLevel);
 
         var profiles = await query.ToListAsync(ct);
-        return profiles.Select(ToDto).ToList();
+        return profiles.Select(ToPublicDto).ToList();
     }
 
     public async Task<AthleteProfileDto> UpdateBasicsAsync(Guid userId, UpdateBasicsRequest request, CancellationToken ct = default)
@@ -49,7 +49,11 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
 
     public async Task<AthleteProfileDto> UpdatePersonalDetailsAsync(Guid userId, UpdatePersonalDetailsRequest request, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(request.DisplayName))
+            throw new InvalidOperationException("Add the name you want sponsors to see.");
+
         var profile = await GetOrCreateEntityAsync(userId, ct);
+        profile.DisplayName = request.DisplayName.Trim();
         profile.DateOfBirth = request.DateOfBirth;
         profile.Gender = request.Gender;
         profile.WeightClass = request.WeightClass;
@@ -199,7 +203,7 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
     {
         var strength = ProfileStrengthCalculator.Calculate(p);
         return new AthleteProfileDto(
-            p.Id, p.UserId, p.Sport, p.CompetitiveLevel, p.Organisation, p.State,
+            p.Id, p.UserId, p.DisplayName, p.Sport, p.CompetitiveLevel, p.Organisation, p.State,
             p.DateOfBirth, p.Gender, p.WeightClass, p.Bio,
             p.Accomplishments.Select(a => new AccomplishmentDto(a.Id, a.Description, a.Year)).ToList(),
             p.Photos.Select(ph => new AthletePhotoDto(ph.Id, ph.Url, ph.IsProfilePhoto)).ToList(),
@@ -208,5 +212,29 @@ public class AthleteProfileService(AppDbContext db, IStripeService stripeService
             p.VerificationReference, p.VerificationStatus, p.VerificationAdminNotes, p.SubscriptionStatus,
             strength.Score
         );
+    }
+
+    /// <summary>Profiles created before display names existed fall back to e.g. "Boxing athlete".</summary>
+    internal static string PublicNameFor(AthleteProfile p) =>
+        !string.IsNullOrWhiteSpace(p.DisplayName) ? p.DisplayName
+        : !string.IsNullOrWhiteSpace(p.Sport) ? $"{p.Sport} athlete"
+        : "Athlete";
+
+    internal static PublicAthleteProfileDto ToPublicDto(AthleteProfile p) => new(
+        p.Id, PublicNameFor(p), p.Sport, p.CompetitiveLevel, p.Organisation, p.State,
+        AgeOn(p.DateOfBirth, DateOnly.FromDateTime(DateTime.UtcNow)), p.Gender, p.WeightClass, p.Bio,
+        p.Accomplishments.Select(a => new AccomplishmentDto(a.Id, a.Description, a.Year)).ToList(),
+        p.Photos.Select(ph => new AthletePhotoDto(ph.Id, ph.Url, ph.IsProfilePhoto)).ToList(),
+        !string.IsNullOrWhiteSpace(p.InstagramHandle), !string.IsNullOrWhiteSpace(p.FacebookHandle),
+        p.FollowerCount, p.AverageReach,
+        p.SponsorshipPackages.Select(sp => new SponsorshipPackageDto(sp.Id, sp.Title, sp.Description)).ToList()
+    );
+
+    private static int? AgeOn(DateOnly? dateOfBirth, DateOnly today)
+    {
+        if (dateOfBirth is not { } dob)
+            return null;
+        var age = today.Year - dob.Year;
+        return dob > today.AddYears(-age) ? age - 1 : age;
     }
 }

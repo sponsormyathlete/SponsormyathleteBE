@@ -123,6 +123,10 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
 
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("FacebookHandle")
                         .HasColumnType("text");
 
@@ -363,12 +367,19 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("ViewedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ViewerKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<Guid?>("ViewerSponsorUserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AthleteProfileId", "ViewedAt");
+
+                    b.HasIndex("AthleteProfileId", "ViewerKey", "ViewedAt");
 
                     b.ToTable("ProfileViews");
                 });
@@ -419,6 +430,10 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsBusiness")
                         .HasColumnType("boolean");

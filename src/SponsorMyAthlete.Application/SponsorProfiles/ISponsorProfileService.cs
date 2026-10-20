@@ -1,3 +1,5 @@
+using SponsorMyAthlete.Application.AthleteProfiles;
+
 namespace SponsorMyAthlete.Application.SponsorProfiles;
 
 public interface ISponsorProfileService
@@ -19,4 +21,17 @@ public interface ISponsorProfileService
     /// <summary>Business sponsors: validates ABN checksum + ABR lookup (brief 2.2). Individual sponsors skip ABN.</summary>
     Task<SponsorProfileDto> UpdateIdentityAsync(Guid userId, UpdateSponsorIdentityRequest request, CancellationToken ct = default);
     Task<SponsorProfileDto> UpdateWishlistsAsync(Guid userId, UpdateSponsorWishlistsRequest request, CancellationToken ct = default);
+
+    /// <summary>The sponsor's own profile exactly as athletes see it.</summary>
+    Task<PublicSponsorProfileDto> GetPublicForUserAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// The sponsor on the other side of a thread. Athletes only get it once the sponsor has sent a
+    /// message — until then sponsors stay anonymous (brief 5.4).
+    /// </summary>
+    Task<PublicSponsorProfileDto> GetPublicForThreadAsync(Guid viewerUserId, Guid threadId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<PublicAthleteProfileDto>> GetSavedAthletesAsync(Guid sponsorUserId, CancellationToken ct = default);
+    Task SaveAthleteAsync(Guid sponsorUserId, Guid athleteProfileId, CancellationToken ct = default);
+    Task UnsaveAthleteAsync(Guid sponsorUserId, Guid athleteProfileId, CancellationToken ct = default);
 }

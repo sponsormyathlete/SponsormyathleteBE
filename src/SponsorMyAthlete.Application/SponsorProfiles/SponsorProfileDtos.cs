@@ -20,10 +20,36 @@ public record SponsorProfileDto(
     SponsorshipType SponsorshipType,
     RelationshipStyle RelationshipStyle,
     string? AboutBlurb,
+    string? DisplayName,
     bool IsBusiness,
     string? Abn,
     string? AbnEntityName,
     DateTimeOffset? AbnValidatedAt,
+    IReadOnlyList<SponsorWishlistDto> Wishlists
+);
+
+/// <summary>
+/// What an athlete sees about a sponsor who has messaged them. No email, ABN number, or other
+/// contact details (brief 7a.1) — only whether the business was verified against the ABR.
+/// </summary>
+public record PublicSponsorProfileDto(
+    Guid Id,
+    string DisplayName,
+    bool IsBusiness,
+    bool AbnVerified,
+    List<string> SportsOfInterest,
+    decimal BudgetMin,
+    decimal BudgetMax,
+    int AthleteCountMin,
+    int? AthleteCountMax,
+    List<string> KeyDeliverablesWanted,
+    string? State,
+    EventAttendancePreference AttendEvents,
+    AthleteLevelPreference AthleteLevelPreference,
+    ReachImportance ReachImportance,
+    SponsorshipType SponsorshipType,
+    RelationshipStyle RelationshipStyle,
+    string? AboutBlurb,
     IReadOnlyList<SponsorWishlistDto> Wishlists
 );
 
@@ -38,6 +64,6 @@ public record UpdateSponsorReachImportanceRequest(ReachImportance ReachImportanc
 public record UpdateSponsorTypeRequest(SponsorshipType SponsorshipType);
 public record UpdateSponsorRelationshipStyleRequest(RelationshipStyle RelationshipStyle);
 public record UpdateSponsorAboutRequest(string AboutBlurb);
-public record UpdateSponsorIdentityRequest(bool IsBusiness, string? Abn);
+public record UpdateSponsorIdentityRequest(bool IsBusiness, string? Abn, string? DisplayName);
 public record WishlistInput(string Title, string Description);
 public record UpdateSponsorWishlistsRequest(List<WishlistInput> Wishlists);

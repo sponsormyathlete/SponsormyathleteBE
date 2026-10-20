@@ -58,7 +58,9 @@ public class ProfileViewConfiguration : IEntityTypeConfiguration<ProfileView>
     public void Configure(EntityTypeBuilder<ProfileView> builder)
     {
         builder.HasKey(v => v.Id);
+        builder.Property(v => v.ViewerKey).IsRequired().HasMaxLength(64);
         builder.HasIndex(v => new { v.AthleteProfileId, v.ViewedAt });
+        builder.HasIndex(v => new { v.AthleteProfileId, v.ViewerKey, v.ViewedAt });
     }
 }
 

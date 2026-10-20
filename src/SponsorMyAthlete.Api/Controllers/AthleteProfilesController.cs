@@ -1,13 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using SponsorMyAthlete.Application.AthleteProfiles;
+using SponsorMyAthlete.Application.ProfileViews;
 using SponsorMyAthlete.Application.Users;
+using SponsorMyAthlete.Domain.Services;
 
 namespace SponsorMyAthlete.Api.Controllers;
 
 [Route("api/athlete-profile")]
-public class AthleteProfilesController(IUserSyncService userSyncService, IAthleteProfileService profileService)
+public class AthleteProfilesController(
+    IUserSyncService userSyncService,
+    IAthleteProfileService profileService,
+    IProfileViewService profileViewService)
     : ApiControllerBase(userSyncService)
 {
+    [HttpGet("me/views")]
+    public async Task<ActionResult<ProfileViewStatsDto>> GetViewStats(
+        [FromQuery] ViewPeriod period, [FromQuery] string? timeZone, CancellationToken ct) =>
+        Ok(await profileViewService.GetStatsForAthleteAsync(await GetCurrentUserIdAsync(ct), period, timeZone, ct));
+
     [HttpGet("me")]
     public async Task<ActionResult<AthleteProfileDto>> GetMine(CancellationToken ct) =>
         Ok(await profileService.GetOrCreateForUserAsync(await GetCurrentUserIdAsync(ct), ct));

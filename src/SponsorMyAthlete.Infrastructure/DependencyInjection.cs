@@ -12,6 +12,7 @@ using SponsorMyAthlete.Application.Admin;
 using SponsorMyAthlete.Application.AthleteProfiles;
 using SponsorMyAthlete.Application.Messaging;
 using SponsorMyAthlete.Application.Payments;
+using SponsorMyAthlete.Application.ProfileViews;
 using SponsorMyAthlete.Application.SponsorProfiles;
 using SponsorMyAthlete.Application.Users;
 using SponsorMyAthlete.Domain.Services;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IStripeService, StripeService>();
         services.AddScoped<IMessagingService, MessagingService>();
         services.AddScoped<IAdminFlagService, AdminFlagService>();
+        services.AddScoped<IProfileViewService, ProfileViewService>();
         services.AddSingleton<IMessageFilter, MessageFilterService>();
 
         return services;

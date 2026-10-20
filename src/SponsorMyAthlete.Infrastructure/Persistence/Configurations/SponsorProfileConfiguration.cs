@@ -20,6 +20,7 @@ public class SponsorProfileConfiguration : IEntityTypeConfiguration<SponsorProfi
         builder.Property(s => s.BudgetMin).HasPrecision(10, 2);
         builder.Property(s => s.BudgetMax).HasPrecision(10, 2);
         builder.Property(s => s.Abn).HasMaxLength(11);
+        builder.Property(s => s.DisplayName).HasMaxLength(100);
 
         builder.HasMany(s => s.Wishlists)
             .WithOne()

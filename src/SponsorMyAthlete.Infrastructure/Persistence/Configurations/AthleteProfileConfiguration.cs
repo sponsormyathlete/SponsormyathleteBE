@@ -15,6 +15,7 @@ public class AthleteProfileConfiguration : IEntityTypeConfiguration<AthleteProfi
         builder.Property(a => a.VerificationStatus).HasConversion<string>().HasMaxLength(20);
         builder.Property(a => a.SubscriptionStatus).HasConversion<string>().HasMaxLength(20);
         builder.Property(a => a.Bio).HasMaxLength(3000);
+        builder.Property(a => a.DisplayName).HasMaxLength(100);
 
         builder.HasIndex(a => new { a.Sport, a.State });
         builder.HasIndex(a => a.VerificationStatus);

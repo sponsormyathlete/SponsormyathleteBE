@@ -19,6 +19,8 @@ public class AthleteProfile
     public string? State { get; set; }
 
     // Step 5 — personal details
+    /// <summary>Name shown on the public profile and in message threads.</summary>
+    public string? DisplayName { get; set; }
     public DateOnly? DateOfBirth { get; set; }
     public string? Gender { get; set; }
     public string? WeightClass { get; set; }

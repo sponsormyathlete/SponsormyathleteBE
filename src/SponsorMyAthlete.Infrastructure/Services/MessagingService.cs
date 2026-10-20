@@ -135,18 +135,28 @@ public class MessagingService(AppDbContext db, IMessageFilter messageFilter) : I
             .OrderBy(m => m.SentAt)
             .Select(m => new MessageDto(m.Id, m.SenderUserId, m.SenderUserId == viewerUserId, m.Body, m.SentAt))
             .ToList();
+        var athleteProfileId = await db.AthleteProfiles
+            .Where(a => a.UserId == thread.AthleteUserId)
+            .Select(a => (Guid?)a.Id)
+            .SingleOrDefaultAsync(ct);
+        var sponsorProfileVisible = thread.SponsorUserId == viewerUserId
+            || await SponsorProfileService.SponsorHasMessagedAsync(db, thread, ct);
 
-        return new ThreadDetailDto(thread.Id, thread.AthleteUserId, thread.SponsorUserId, label, messages);
+        return new ThreadDetailDto(thread.Id, thread.AthleteUserId, thread.SponsorUserId, label, messages, athleteProfileId, sponsorProfileVisible);
     }
 
     private async Task<string> GetCounterpartyLabelAsync(MessageThread thread, Guid viewerUserId, CancellationToken ct)
     {
-        // Brief 5.4 / 7a: sponsors stay anonymous to athletes until they message, so an athlete
-        // sees a generic label rather than the sponsor's identity.
+        // Brief 5.4: sponsors stay anonymous to athletes until they send a message, then are named.
         if (thread.AthleteUserId == viewerUserId)
-            return "Sponsor";
+        {
+            if (!await SponsorProfileService.SponsorHasMessagedAsync(db, thread, ct))
+                return "Sponsor";
+            var sponsorProfile = await db.SponsorProfiles.SingleOrDefaultAsync(s => s.UserId == thread.SponsorUserId, ct);
+            return sponsorProfile is null ? "Sponsor" : SponsorProfileService.PublicNameFor(sponsorProfile);
+        }
 
         var athleteProfile = await db.AthleteProfiles.SingleOrDefaultAsync(a => a.UserId == thread.AthleteUserId, ct);
-        return athleteProfile?.Sport is { Length: > 0 } sport ? $"{sport} athlete" : "Athlete";
+        return athleteProfile is null ? "Athlete" : AthleteProfileService.PublicNameFor(athleteProfile);
     }
 }

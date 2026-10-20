@@ -14,7 +14,11 @@ public record ThreadDetailDto(
     Guid AthleteUserId,
     Guid SponsorUserId,
     string CounterpartyLabel,
-    IReadOnlyList<MessageDto> Messages
+    IReadOnlyList<MessageDto> Messages,
+    // For the sponsor's link back to the athlete's directory profile.
+    Guid? AthleteProfileId,
+    // True once the athlete may see who the sponsor is (they've sent a message).
+    bool SponsorProfileVisible
 );
 
 public record SendMessageRequest(string Body);

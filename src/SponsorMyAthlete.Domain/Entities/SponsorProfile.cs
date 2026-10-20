@@ -42,6 +42,8 @@ public class SponsorProfile
     public string? AboutBlurb { get; set; }
 
     // Identity confirmation (brief 2.2)
+    /// <summary>Name athletes see once the sponsor has messaged them. Falls back to the ABR entity name.</summary>
+    public string? DisplayName { get; set; }
     public bool IsBusiness { get; set; }
     public string? Abn { get; set; }
     public string? AbnEntityName { get; set; }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SponsorMyAthlete.Application.AthleteProfiles;
 using SponsorMyAthlete.Application.SponsorProfiles;
 using SponsorMyAthlete.Application.Users;
 
@@ -63,4 +64,30 @@ public class SponsorProfilesController(IUserSyncService userSyncService, ISponso
     [HttpPut("me/wishlists")]
     public async Task<ActionResult<SponsorProfileDto>> UpdateWishlists([FromBody] UpdateSponsorWishlistsRequest request, CancellationToken ct) =>
         Ok(await profileService.UpdateWishlistsAsync(await GetCurrentUserIdAsync(ct), request, ct));
+
+    [HttpGet("me/public")]
+    public async Task<ActionResult<PublicSponsorProfileDto>> GetMinePublic(CancellationToken ct) =>
+        Ok(await profileService.GetPublicForUserAsync(await GetCurrentUserIdAsync(ct), ct));
+
+    [HttpGet("by-thread/{threadId:guid}")]
+    public async Task<ActionResult<PublicSponsorProfileDto>> GetForThread(Guid threadId, CancellationToken ct) =>
+        Ok(await profileService.GetPublicForThreadAsync(await GetCurrentUserIdAsync(ct), threadId, ct));
+
+    [HttpGet("me/saved-athletes")]
+    public async Task<ActionResult<IReadOnlyList<PublicAthleteProfileDto>>> GetSavedAthletes(CancellationToken ct) =>
+        Ok(await profileService.GetSavedAthletesAsync(await GetCurrentUserIdAsync(ct), ct));
+
+    [HttpPut("me/saved-athletes/{athleteProfileId:guid}")]
+    public async Task<IActionResult> SaveAthlete(Guid athleteProfileId, CancellationToken ct)
+    {
+        await profileService.SaveAthleteAsync(await GetCurrentUserIdAsync(ct), athleteProfileId, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("me/saved-athletes/{athleteProfileId:guid}")]
+    public async Task<IActionResult> UnsaveAthlete(Guid athleteProfileId, CancellationToken ct)
+    {
+        await profileService.UnsaveAthleteAsync(await GetCurrentUserIdAsync(ct), athleteProfileId, ct);
+        return NoContent();
+    }
 }
