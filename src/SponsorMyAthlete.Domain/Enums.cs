@@ -15,10 +15,14 @@ public enum VerificationStatus
     Rejected
 }
 
+/// <summary>Competition tier an athlete competes at, not amateur/pro status (brief 4.1 step 2).</summary>
 public enum CompetitiveLevel
 {
-    Amateur,
-    SemiPro,
+    Local,
+    District,
+    State,
+    National,
+    International,
     Professional
 }
 
@@ -53,8 +57,11 @@ public enum ReachImportance
 
 public enum AthleteLevelPreference
 {
-    Amateur,
-    SemiPro,
+    Local,
+    District,
+    State,
+    National,
+    International,
     Professional,
     All
 }
