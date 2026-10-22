@@ -34,4 +34,8 @@ public interface ISponsorProfileService
     Task<IReadOnlyList<PublicAthleteProfileDto>> GetSavedAthletesAsync(Guid sponsorUserId, CancellationToken ct = default);
     Task SaveAthleteAsync(Guid sponsorUserId, Guid athleteProfileId, CancellationToken ct = default);
     Task UnsaveAthleteAsync(Guid sponsorUserId, Guid athleteProfileId, CancellationToken ct = default);
+
+    /// <summary>Public, anonymized sponsor directory for athletes (brief parity with the athlete directory).</summary>
+    Task<IReadOnlyList<PublicSponsorSummaryDto>> SearchDirectoryAsync(string? sport, string? state, CancellationToken ct = default);
+    Task<PublicSponsorSummaryDto?> GetSummaryByIdAsync(Guid sponsorProfileId, CancellationToken ct = default);
 }

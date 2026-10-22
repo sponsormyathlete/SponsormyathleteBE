@@ -13,6 +13,11 @@ public class DealConfiguration : IEntityTypeConfiguration<Deal>
         builder.Property(d => d.Status).HasConversion<string>().HasMaxLength(30);
         builder.Property(d => d.DeclaredValue).HasPrecision(10, 2);
         builder.Property(d => d.PlatformFeeAmount).HasPrecision(10, 2);
+        builder.Property(d => d.Title).IsRequired().HasMaxLength(200);
+        builder.Property(d => d.Note).HasMaxLength(2000);
+        builder.Property(d => d.AdminNotes).HasMaxLength(2000);
+        builder.HasIndex(d => new { d.AthleteUserId, d.SponsorUserId });
+        builder.HasIndex(d => d.Status);
     }
 }
 

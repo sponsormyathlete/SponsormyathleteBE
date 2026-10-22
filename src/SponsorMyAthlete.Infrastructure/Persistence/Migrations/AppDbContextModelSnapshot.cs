@@ -228,7 +228,8 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<Guid>("AthleteUserId")
                         .HasColumnType("uuid");
@@ -246,6 +247,10 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("MessageThreadId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -254,6 +259,9 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)");
 
                     b.Property<Guid>("SponsorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SponsorshipPackageId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
@@ -267,12 +275,21 @@ namespace SponsorMyAthlete.Infrastructure.Persistence.Migrations
                     b.Property<string>("StripePaymentLinkUrl")
                         .HasColumnType("text");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("AthleteUserId", "SponsorUserId");
 
                     b.ToTable("Deals");
                 });

@@ -200,6 +200,30 @@ public class SponsorProfileService(AppDbContext db, IAbrClient abrClient) : ISpo
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<IReadOnlyList<PublicSponsorSummaryDto>> SearchDirectoryAsync(string? sport, string? state, CancellationToken ct = default)
+    {
+        var query = db.SponsorProfiles.Where(s => s.OnboardingCompletedAt != null);
+        if (!string.IsNullOrWhiteSpace(state))
+            query = query.Where(s => s.State == state);
+
+        var profiles = await query.ToListAsync(ct);
+        if (!string.IsNullOrWhiteSpace(sport))
+            profiles = profiles.Where(s => s.SportsOfInterest.Contains(sport)).ToList();
+
+        return profiles.Select(ToSummaryDto).ToList();
+    }
+
+    public async Task<PublicSponsorSummaryDto?> GetSummaryByIdAsync(Guid sponsorProfileId, CancellationToken ct = default)
+    {
+        var profile = await db.SponsorProfiles.SingleOrDefaultAsync(s => s.Id == sponsorProfileId && s.OnboardingCompletedAt != null, ct);
+        return profile is null ? null : ToSummaryDto(profile);
+    }
+
+    private static PublicSponsorSummaryDto ToSummaryDto(SponsorProfile p) => new(
+        p.Id, p.IsBusiness, p.SportsOfInterest, p.BudgetMin, p.BudgetMax, p.State,
+        p.AthleteLevelPreference, p.SponsorshipType, p.RelationshipStyle, p.KeyDeliverablesWanted, p.AboutBlurb
+    );
+
     internal static Task<bool> SponsorHasMessagedAsync(AppDbContext db, MessageThread thread, CancellationToken ct) =>
         db.Messages.AnyAsync(m => m.ThreadId == thread.Id && m.SenderUserId == thread.SponsorUserId, ct);
 

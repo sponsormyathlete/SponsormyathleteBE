@@ -1,5 +1,7 @@
 bin/
 obj/
+src/SponsorMyAthlete.Api/wwwroot/uploads/*
+!src/SponsorMyAthlete.Api/wwwroot/uploads/.gitkeep
 *.user
 appsettings.Development.json
 appsettings.*.local.json

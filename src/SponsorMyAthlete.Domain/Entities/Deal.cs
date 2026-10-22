@@ -7,6 +7,10 @@ public class Deal
     public Guid AthleteUserId { get; set; }
     public Guid SponsorUserId { get; set; }
     public Guid? MessageThreadId { get; set; }
+    public Guid? SponsorshipPackageId { get; set; }
+
+    public required string Title { get; set; }
+    public string? Note { get; set; }
 
     public DealType Type { get; set; }
     public decimal DeclaredValue { get; set; }

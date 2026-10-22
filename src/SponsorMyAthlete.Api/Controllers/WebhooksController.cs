@@ -2,16 +2,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SponsorMyAthlete.Application.Abstractions;
+using SponsorMyAthlete.Application.Deals;
 using SponsorMyAthlete.Domain;
 using SponsorMyAthlete.Infrastructure.Persistence;
 using Stripe;
+using Stripe.Checkout;
 
 namespace SponsorMyAthlete.Api.Controllers;
 
 [ApiController]
 [AllowAnonymous]
 [Route("api/webhooks/stripe")]
-public class WebhooksController(IStripeService stripeService, AppDbContext db, ILogger<WebhooksController> logger) : ControllerBase
+public class WebhooksController(IStripeService stripeService, IDealService dealService, AppDbContext db, ILogger<WebhooksController> logger) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Handle(CancellationToken ct)
@@ -30,8 +32,11 @@ public class WebhooksController(IStripeService stripeService, AppDbContext db, I
             return BadRequest();
         }
 
-        // Deal payment-link events (checkout/payment_intent) are wired up alongside the
-        // concierge Deal flow (brief 3.3) — not yet built in this milestone.
+        if (stripeEvent.Data.Object is Session session && stripeEvent.Type == "checkout.session.completed" && session.PaymentLinkId is not null)
+        {
+            await dealService.MarkPaidByPaymentLinkIdAsync(session.PaymentLinkId, ct);
+        }
+
         if (stripeEvent.Data.Object is Subscription subscription)
         {
             var profile = await db.AthleteProfiles.SingleOrDefaultAsync(a => a.StripeSubscriptionId == subscription.Id, ct);

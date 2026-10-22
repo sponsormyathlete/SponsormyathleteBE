@@ -53,6 +53,25 @@ public record PublicSponsorProfileDto(
     IReadOnlyList<SponsorWishlistDto> Wishlists
 );
 
+/// <summary>
+/// Directory card for an athlete browsing sponsors. No display name or business identity —
+/// sponsors stay anonymous until they message an athlete first (brief 5.4); this mirrors that
+/// for the reverse direction so an athlete-initiated message still triggers the normal reveal-on-reply flow.
+/// </summary>
+public record PublicSponsorSummaryDto(
+    Guid Id,
+    bool IsBusiness,
+    List<string> SportsOfInterest,
+    decimal BudgetMin,
+    decimal BudgetMax,
+    string? State,
+    AthleteLevelPreference AthleteLevelPreference,
+    SponsorshipType SponsorshipType,
+    RelationshipStyle RelationshipStyle,
+    List<string> KeyDeliverablesWanted,
+    string? AboutBlurb
+);
+
 public record UpdateSponsorInterestsRequest(List<string> SportsOfInterest);
 public record UpdateSponsorBudgetRequest(decimal BudgetMin, decimal BudgetMax);
 public record UpdateSponsorAthleteCountRequest(int AthleteCountMin, int? AthleteCountMax);

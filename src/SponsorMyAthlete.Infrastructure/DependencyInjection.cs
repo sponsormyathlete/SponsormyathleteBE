@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SponsorMyAthlete.Application.Abstractions;
 using SponsorMyAthlete.Application.Admin;
 using SponsorMyAthlete.Application.AthleteProfiles;
+using SponsorMyAthlete.Application.Deals;
 using SponsorMyAthlete.Application.Messaging;
 using SponsorMyAthlete.Application.Payments;
 using SponsorMyAthlete.Application.ProfileViews;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentSetupService, PaymentSetupService>();
         services.AddScoped<IStripeService, StripeService>();
         services.AddScoped<IMessagingService, MessagingService>();
+        services.AddScoped<IDealService, DealService>();
         services.AddScoped<IAdminFlagService, AdminFlagService>();
         services.AddScoped<IProfileViewService, ProfileViewService>();
         services.AddSingleton<IMessageFilter, MessageFilterService>();

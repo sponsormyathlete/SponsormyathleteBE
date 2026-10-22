@@ -56,6 +56,32 @@ public class MessagingService(AppDbContext db, IMessageFilter messageFilter) : I
         return await BuildThreadDetailAsync(thread, sponsorUserId, ct);
     }
 
+    public async Task<ThreadDetailDto> GetOrCreateThreadWithSponsorAsync(Guid athleteUserId, Guid sponsorProfileId, CancellationToken ct = default)
+    {
+        var sponsorProfile = await db.SponsorProfiles.SingleOrDefaultAsync(s => s.Id == sponsorProfileId, ct)
+            ?? throw new KeyNotFoundException("Sponsor profile not found.");
+
+        var thread = await db.MessageThreads
+            .Include(t => t.Messages)
+            .SingleOrDefaultAsync(t => t.AthleteUserId == athleteUserId && t.SponsorUserId == sponsorProfile.UserId, ct);
+
+        if (thread is null)
+        {
+            thread = new MessageThread
+            {
+                Id = Guid.NewGuid(),
+                AthleteUserId = athleteUserId,
+                SponsorUserId = sponsorProfile.UserId,
+                CreatedAt = DateTimeOffset.UtcNow,
+                LastMessageAt = DateTimeOffset.UtcNow,
+            };
+            db.MessageThreads.Add(thread);
+            await db.SaveChangesAsync(ct);
+        }
+
+        return await BuildThreadDetailAsync(thread, athleteUserId, ct);
+    }
+
     public async Task<ThreadDetailDto> GetThreadAsync(Guid userId, Guid threadId, CancellationToken ct = default)
     {
         var thread = await db.MessageThreads

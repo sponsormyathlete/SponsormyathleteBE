@@ -20,6 +20,10 @@ public class MessagingController(IUserSyncService userSyncService, IMessagingSer
     public async Task<ActionResult<ThreadDetailDto>> StartThreadWithAthlete(Guid athleteProfileId, CancellationToken ct) =>
         Ok(await messagingService.GetOrCreateThreadWithAthleteAsync(await GetCurrentUserIdAsync(ct), athleteProfileId, ct));
 
+    [HttpPost("threads/with-sponsor/{sponsorProfileId:guid}")]
+    public async Task<ActionResult<ThreadDetailDto>> StartThreadWithSponsor(Guid sponsorProfileId, CancellationToken ct) =>
+        Ok(await messagingService.GetOrCreateThreadWithSponsorAsync(await GetCurrentUserIdAsync(ct), sponsorProfileId, ct));
+
     [HttpPost("threads/{threadId:guid}/messages")]
     public async Task<ActionResult<SendMessageResult>> SendMessage(Guid threadId, [FromBody] SendMessageRequest request, CancellationToken ct) =>
         Ok(await messagingService.SendMessageAsync(await GetCurrentUserIdAsync(ct), threadId, request, ct));
